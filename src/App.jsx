@@ -30,17 +30,37 @@ const BACKGROUNDS = {
 // Every element is a photograph or photorealistic image, stored locally
 // in public/elements/. No cartoons, no illustrations, no clip art —
 // see ATTRIBUTION.md.
+//
+// `mask` is how "Remove background" works for that photo. The photo's
+// background is cut away by luminance, in the browser, with no API:
+//   - { type: 'dark', lo, hi } — the background is dark: pixels darker
+//     than `lo` become transparent, brighter than `hi` stay solid, with
+//     a soft edge in between. For lilies, candlelight and angel wings
+//     (bright subject on a dark background) this takes the background
+//     clean away.
+//   - { type: 'light', lo, hi } — the background is bright: pixels
+//     brighter than `hi` become transparent, darker than `lo` stay
+//     solid. For the rose heart and ribbon heart (dark-red subject on
+//     white) this takes the white away clean.
+//   - null — the background cannot be separated from the subject by
+//     brightness (white roses on cream, a dark cross against blue sky,
+//     or a sunset, which is all scene and no subject), so the toggle is
+//     greyed out for those photos rather than pretending.
+// Blend modes were tried first and do NOT work here: on the app's light
+// design backgrounds multiply changes almost nothing (the photo stays
+// whole) and screen turns the whole photo into plain cream, subject
+// included — verified on the real pixels before this was built.
 const ELEMENTS = {
-  dove: { name: 'Doves', src: '/elements/dove.jpg', premium: false },
-  cross: { name: 'Cross', src: '/elements/cross.jpg', premium: false },
-  roses: { name: 'White Roses', src: '/elements/roses.jpg', premium: true },
-  lilies: { name: 'White Lilies', src: '/elements/lilies.jpg', premium: true },
-  candle: { name: 'Candlelight', src: '/elements/candle.jpg', premium: true },
-  wings: { name: 'Angel Wings', src: '/elements/wings.jpg', premium: true },
-  sunset: { name: 'Sunset', src: '/elements/sunset.jpg', premium: true },
-  heart: { name: 'Rose Heart', src: '/elements/heart.jpg', premium: true },
-  cherub: { name: 'Cherub', src: '/elements/cherub.jpg', premium: true },
-  ribbonHeart: { name: 'Ribbon Heart', src: '/elements/ribbon-heart.jpg', premium: true, ribbonText: true },
+  dove: { name: 'Doves', src: '/elements/dove.jpg', premium: false, mask: { type: 'dark', lo: 0.45, hi: 0.68 } },
+  cross: { name: 'Cross', src: '/elements/cross.jpg', premium: false, mask: null },
+  roses: { name: 'White Roses', src: '/elements/roses.jpg', premium: true, mask: null },
+  lilies: { name: 'White Lilies', src: '/elements/lilies.jpg', premium: true, mask: { type: 'dark', lo: 0.15, hi: 0.38 } },
+  candle: { name: 'Candlelight', src: '/elements/candle.jpg', premium: true, mask: { type: 'dark', lo: 0.22, hi: 0.45 } },
+  wings: { name: 'Angel Wings', src: '/elements/wings.jpg', premium: true, mask: { type: 'dark', lo: 0.28, hi: 0.50 } },
+  sunset: { name: 'Sunset', src: '/elements/sunset.jpg', premium: true, mask: null },
+  heart: { name: 'Rose Heart', src: '/elements/heart.jpg', premium: true, mask: { type: 'light', lo: 0.72, hi: 0.88 } },
+  cherub: { name: 'Cherub', src: '/elements/cherub.jpg', premium: true, mask: { type: 'dark', lo: 0.45, hi: 0.68 } },
+  ribbonHeart: { name: 'Ribbon Heart', src: '/elements/ribbon-heart.jpg', premium: true, ribbonText: true, mask: { type: 'light', lo: 0.58, hi: 0.80 } },
 }
 
 const OUTPUTS = {
@@ -80,6 +100,39 @@ const PREMIUM_PRICE = '$2.99 once'
 // ---------------------------------------------------------------------------
 // Canvas helpers
 // ---------------------------------------------------------------------------
+
+// Cut a photo's background away by brightness, in the browser.
+// Returns an offscreen canvas with the same picture but transparent
+// where the background was, or null if it cannot be done. The masked
+// canvas draws exactly like the photo, so the preview and every export
+// use the same image and what you see is what prints.
+function smoothstep(x, lo, hi) {
+  const t = Math.max(0, Math.min(1, (x - lo) / (hi - lo)))
+  return t * t * (3 - 2 * t)
+}
+
+function makeMaskedImage(img, mask) {
+  try {
+    const c = document.createElement('canvas')
+    c.width = img.naturalWidth || img.width
+    c.height = img.naturalHeight || img.height
+    const ctx = c.getContext('2d')
+    ctx.drawImage(img, 0, 0)
+    const imageData = ctx.getImageData(0, 0, c.width, c.height)
+    const px = imageData.data
+    for (let i = 0; i < px.length; i += 4) {
+      const lum = (0.299 * px[i] + 0.587 * px[i + 1] + 0.114 * px[i + 2]) / 255
+      const a = mask.type === 'dark'
+        ? smoothstep(lum, mask.lo, mask.hi)
+        : 1 - smoothstep(lum, mask.lo, mask.hi)
+      px[i + 3] = Math.round(a * 255)
+    }
+    ctx.putImageData(imageData, 0, 0)
+    return c
+  } catch {
+    return null
+  }
+}
 
 function loadImage(src) {
   return new Promise((resolve) => {
@@ -199,7 +252,18 @@ function drawPhotoFramed(ctx, img, x, y, w, h, frame, fitMode, zoom, pan) {
 }
 
 // Draw one placed photo element as a small framed tile.
-function drawElementTile(ctx, img, x, y, w, h) {
+// When `hideBg` is set, the image passed in is already the background-
+// removed version: no white tile, shadow or border — just the subject,
+// drawn straight onto the design behind it.
+function drawElementTile(ctx, img, x, y, w, h, hideBg) {
+  if (hideBg) {
+    ctx.save()
+    rr(ctx, x, y, w, h, w * 0.05)
+    ctx.clip()
+    drawCover(ctx, img, x, y, w, h, 1, { x: 0, y: 0 })
+    ctx.restore()
+    return
+  }
   ctx.save()
   ctx.shadowColor = 'rgba(0,0,0,0.25)'
   ctx.shadowBlur = w * 0.08
@@ -278,13 +342,20 @@ function renderDesign(ctx, W, H, variant, d) {
         ctx.restore()
         return
       }
-      const img = d.elementImgs[p.id]
+      const el = ELEMENTS[p.id]
+      // With "Remove background" on, draw the background-removed version
+      // of the photo; if there is none (this photo cannot be separated),
+      // fall back to the full photo in its tile.
+      const masked = p.hideBg ? d.elementMasked[p.id] : null
+      const img = masked || d.elementImgs[p.id]
       if (!img) return
       const w = p.w * W * scale
       const h = w * 0.75
       const x = p.x * W - w / 2
       const y = p.y * H - h / 2
-      drawElementTile(ctx, img, x, y, w, h)
+      // hideBg defaults to off (older designs have no such field), so
+      // existing designs do not change.
+      drawElementTile(ctx, img, x, y, w, h, Boolean(masked))
     })
   }
 
@@ -507,6 +578,7 @@ function renderDesign(ctx, W, H, variant, d) {
 
 const FAQS = [
   { q: 'Is MemorialPrint really free?', a: 'Yes — making a memorial poster is free, with two photo elements, two elegant fonts, and 5 downloads a day. Premium is a one-time $2.99 and unlocks every element, every font, and every output: the funeral program, the invitation, the keepsakes, and the t-shirt design.' },
+  { q: 'Can I remove the background from a piece?', a: 'Yes, for most pieces — tap one you added, then tick “Remove background”. The photo background melts away so just the subject shows, on the poster and on every download. It works best where the background is plain: a dark background behind lilies, a candle or angel wings, or a white background behind a rose heart or ribbon heart. A few photos can’t be separated from their background (white roses, the cross, the sunset), so the tick box is greyed out for those.' },
   { q: 'Does my loved one\u2019s photo leave my device?', a: 'No. Your photo is processed right in your browser and never uploaded anywhere. Nothing you make is stored on a server.' },
   { q: 'What can I make with it?', a: 'A wall poster to hang at home, a funeral program pamphlet to hand out at the service, an invitation to the service, and celebration-of-life keepsakes like prayer cards. The same design can also be used on a t-shirt.' },
   { q: 'What is in a funeral program?', a: 'A folded pamphlet: a cover with their photo, name and dates, inside pages for the order of service and an obituary or poem, and a back page with a thank-you note. It downloads as a print-ready PDF.' },
@@ -547,6 +619,7 @@ export default function App() {
   const previewBoxRef = useRef(null)
   const dragRef = useRef(null)
   const elementImgsRef = useRef({})
+  const elementMaskedRef = useRef({}) // background-removed versions, built once at load
   const photoImgRef = useRef(null)
 
   const bg = BACKGROUNDS[bgKey]
@@ -577,11 +650,18 @@ export default function App() {
   }, [])
 
   // ---- preload the element photos once (same-origin, so exports stay clean)
+  // Photos with a mask also get a background-removed version, built once
+  // here so the preview and every export share it.
   useEffect(() => {
     let cancelled = false
     Promise.all(Object.entries(ELEMENTS).map(async ([id, el]) => {
       const img = await loadImage(el.src)
-      if (!cancelled && img) elementImgsRef.current[id] = img
+      if (cancelled || !img) return
+      elementImgsRef.current[id] = img
+      if (el.mask) {
+        const masked = makeMaskedImage(img, el.mask)
+        if (masked) elementMaskedRef.current[id] = masked
+      }
     })).then(() => { if (!cancelled) drawPreview() })
     return () => { cancelled = true }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -632,6 +712,7 @@ export default function App() {
     return {
       photoImg: photoImgRef.current,
       elementImgs: elementImgsRef.current,
+      elementMasked: elementMaskedRef.current,
       name, fontKey, birthDate, deathDate, message,
       serviceDate, serviceTime, serviceLocation,
       placed, bgKey, photoFrame, photoFit, photoZoom, photoPan,
@@ -721,7 +802,7 @@ export default function App() {
     ]
     const spot = spots[imageCount % spots.length]
     const uid = `${id}-${Date.now()}`
-    const items = [{ uid, id, x: spot.x, y: spot.y, w: 0.22 }]
+    const items = [{ uid, id, x: spot.x, y: spot.y, w: 0.22, hideBg: false }]
     let selectUid = uid
     if (el.ribbonText) {
       // The ribbon words are their own piece: they start on the ribbon,
@@ -747,6 +828,13 @@ export default function App() {
   function updateSelected(w) {
     if (!selectedUid) return
     setPlaced((prev) => prev.map((p) => (p.uid === selectedUid ? { ...p, w } : p)))
+  }
+
+  // "Remove background" is free for everyone — a designer feature, not
+  // a new element, so it is never gated behind Premium.
+  function toggleSelectedHideBg() {
+    if (!selectedUid) return
+    setPlaced((prev) => prev.map((p) => (p.uid === selectedUid ? { ...p, hideBg: !p.hideBg } : p)))
   }
 
   function updateSelectedText(text) {
@@ -975,7 +1063,16 @@ export default function App() {
                   }}
                   title={el.name}
                 >
-                  <img src={el.src} alt={el.name} draggable={false} className="w-full h-full object-cover rounded-md shadow pointer-events-none" />
+                  {/* When "Remove background" is on, the overlay photo is
+                      hidden and the canvas tile underneath — blended onto
+                      the design — is what shows, exactly as it will print. */}
+                  <img
+                    src={el.src}
+                    alt={el.name}
+                    draggable={false}
+                    className="w-full h-full object-cover rounded-md shadow pointer-events-none"
+                    style={p.hideBg ? { visibility: 'hidden' } : undefined}
+                  />
                 </div>
               )
             })}
@@ -1151,6 +1248,15 @@ export default function App() {
                   <label className="block mt-1">Size
                     <input type="range" min="0.12" max="0.45" step="0.01" value={selected.w} onChange={(e) => updateSelected(parseFloat(e.target.value))} className="w-full" />
                   </label>
+                  {ELEMENTS[selected.id].mask ? (
+                    <label className="flex items-center gap-2 mt-2 cursor-pointer font-bold">
+                      <input type="checkbox" checked={!!selected.hideBg} onChange={toggleSelectedHideBg} className="w-4 h-4 accent-amber-700" />
+                      Remove background
+                    </label>
+                  ) : (
+                    <span className="block mt-2 font-bold text-slate-400">Remove background <span className="font-normal text-slate-500">· not available for this photo — its background can’t be separated from the subject</span></span>
+                  )}
+                  <span className="block font-normal text-slate-500">Just the subject shows — no photo background. Works best where the background is plain.</span>
                   <button onClick={() => removeElement(selected.uid)} className="text-red-700 font-bold text-xs mt-1">Remove this piece</button>
                 </span>
               )}
