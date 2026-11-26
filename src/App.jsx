@@ -27,8 +27,9 @@ const BACKGROUNDS = {
   sunset: { name: 'Gentle Sunset', premium: true, dark: false, gradient: ['#FDE9D9', '#F3C39B'] },
 }
 
-// Every element is a real photograph, stored locally in public/elements/.
-// No cartoons, no illustrations, no clip art — see ATTRIBUTION.md.
+// Every element is a photograph or photorealistic image, stored locally
+// in public/elements/. No cartoons, no illustrations, no clip art —
+// see ATTRIBUTION.md.
 const ELEMENTS = {
   dove: { name: 'Doves', src: '/elements/dove.jpg', premium: false },
   cross: { name: 'Cross', src: '/elements/cross.jpg', premium: false },
@@ -38,6 +39,8 @@ const ELEMENTS = {
   wings: { name: 'Angel Wings', src: '/elements/wings.jpg', premium: true },
   sunset: { name: 'Sunset', src: '/elements/sunset.jpg', premium: true },
   heart: { name: 'Rose Heart', src: '/elements/heart.jpg', premium: true },
+  cherub: { name: 'Cherub', src: '/elements/cherub.jpg', premium: true },
+  ribbonHeart: { name: 'Ribbon Heart', src: '/elements/ribbon-heart.jpg', premium: true, ribbonText: true },
 }
 
 const OUTPUTS = {
@@ -250,6 +253,31 @@ function renderDesign(ctx, W, H, variant, d) {
 
   function drawPlacedElements(scale = 1) {
     ;(d.placed || []).forEach((p) => {
+      if (p.kind === 'text') {
+        // Ribbon words: their own draggable piece, drawn in elegant script.
+        const text = (p.text || '').trim()
+        if (!text) return
+        const w = p.w * W * scale
+        const size = Math.max(10, w * 0.13)
+        const cx = p.x * W
+        const cy = p.y * H
+        ctx.save()
+        ctx.textAlign = 'center'
+        ctx.textBaseline = 'middle'
+        ctx.font = `600 ${size}px 'Great Vibes', cursive`
+        const lines = wrapText(ctx, text, w * 1.1).slice(0, 2)
+        ctx.lineWidth = size * 0.16
+        ctx.lineJoin = 'round'
+        ctx.strokeStyle = 'rgba(255,255,255,0.9)'
+        ctx.fillStyle = '#43302B'
+        lines.forEach((ln, i) => {
+          const y = cy + (i - (lines.length - 1) / 2) * size * 1.05
+          ctx.strokeText(ln, cx, y, w * 1.1)
+          ctx.fillText(ln, cx, y, w * 1.1)
+        })
+        ctx.restore()
+        return
+      }
       const img = d.elementImgs[p.id]
       if (!img) return
       const w = p.w * W * scale
@@ -682,7 +710,8 @@ export default function App() {
       return
     }
     const freeCap = premium ? 4 : 2
-    if (placed.length >= freeCap) {
+    const imageCount = placed.filter((p) => p.kind !== 'text').length
+    if (imageCount >= freeCap) {
       showToast(premium ? 'Up to 4 pieces on a canvas.' : `Free adds up to 2 pieces — ${PREMIUM_PRICE} unlocks 4.`)
       return
     }
@@ -690,20 +719,39 @@ export default function App() {
       { x: 0.16, y: 0.78 }, { x: 0.84, y: 0.78 },
       { x: 0.16, y: 0.2 }, { x: 0.84, y: 0.2 },
     ]
-    const spot = spots[placed.length % spots.length]
+    const spot = spots[imageCount % spots.length]
     const uid = `${id}-${Date.now()}`
-    setPlaced((prev) => [...prev, { uid, id, x: spot.x, y: spot.y, w: 0.22 }])
-    setSelectedUid(uid)
+    const items = [{ uid, id, x: spot.x, y: spot.y, w: 0.22 }]
+    let selectUid = uid
+    if (el.ribbonText) {
+      // The ribbon words are their own piece: they start on the ribbon,
+      // but the user can drag them anywhere on the design.
+      const textUid = `ribbonwords-${Date.now()}`
+      items.push({ uid: textUid, kind: 'text', id: 'ribbonText', x: spot.x, y: spot.y, w: 0.22, text: name.trim(), pairUid: uid })
+      selectUid = textUid
+      if (!name.trim()) {
+        showToast('Tap the ribbon words and type their name — they can sit on the ribbon or anywhere you like.')
+      }
+    }
+    setPlaced((prev) => [...prev, ...items])
+    setSelectedUid(selectUid)
   }
 
   function removeElement(uid) {
-    setPlaced((prev) => prev.filter((p) => p.uid !== uid))
-    if (selectedUid === uid) setSelectedUid(null)
+    const sel = placed.find((p) => p.uid === selectedUid)
+    // Removing a picture also removes its paired ribbon words.
+    setPlaced((prev) => prev.filter((p) => p.uid !== uid && p.pairUid !== uid))
+    if (selectedUid === uid || (sel && sel.pairUid === uid)) setSelectedUid(null)
   }
 
   function updateSelected(w) {
     if (!selectedUid) return
     setPlaced((prev) => prev.map((p) => (p.uid === selectedUid ? { ...p, w } : p)))
+  }
+
+  function updateSelectedText(text) {
+    if (!selectedUid) return
+    setPlaced((prev) => prev.map((p) => (p.uid === selectedUid ? { ...p, text } : p)))
   }
 
   function onPhotoFile(file) {
@@ -879,8 +927,41 @@ export default function App() {
             <canvas ref={previewRef} className="block w-full h-full" />
             {/* Draggable placed elements (hit areas over the canvas) */}
             {placed.map((p) => {
-              const el = ELEMENTS[p.id]
               const isSel = p.uid === selectedUid
+              if (p.kind === 'text') {
+                const hasText = (p.text || '').trim()
+                return (
+                  <div
+                    key={p.uid}
+                    onPointerDown={(e) => onElementPointerDown(e, p.uid)}
+                    className={`absolute cursor-move touch-none flex items-center justify-center ${isSel ? 'ring-2 ring-amber-600 rounded-md' : ''}`}
+                    style={{
+                      left: `${(p.x - p.w / 2) * 100}%`,
+                      top: `${(p.y - (p.w * 0.75) / 2) * 100}%`,
+                      width: `${p.w * 100}%`,
+                      aspectRatio: '4 / 3',
+                    }}
+                    title="Ribbon words"
+                  >
+                    {hasText ? (
+                      <span
+                        className="pointer-events-none text-center leading-none"
+                        style={{ fontFamily: "'Great Vibes', cursive", fontSize: `${Math.max(11, p.w * 60)}px`, color: '#43302B', textShadow: '0 0 4px #fff, 0 0 8px #fff' }}
+                      >
+                        {p.text}
+                      </span>
+                    ) : (
+                      <span
+                        className="pointer-events-none text-center leading-tight px-1"
+                        style={{ fontFamily: "'Great Vibes', cursive", fontSize: `${Math.max(11, p.w * 44)}px`, color: '#8A6D3B' }}
+                      >
+                        Type their name…
+                      </span>
+                    )}
+                  </div>
+                )
+              }
+              const el = ELEMENTS[p.id]
               return (
                 <div
                   key={p.uid}
@@ -1040,7 +1121,7 @@ export default function App() {
 
           {/* 4 · Elements */}
           <div className="bg-white rounded-2xl shadow p-4">
-            <h2 className="font-display font-semibold text-lg mb-2">4 · Add the pieces <span className="text-sm font-body font-normal text-slate-500">· real photographs, tap to add — drag them on the canvas</span></h2>
+            <h2 className="font-display font-semibold text-lg mb-2">4 · Add the pieces <span className="text-sm font-body font-normal text-slate-500">· photographs, tap to add — drag them on the canvas</span></h2>
             <div className="grid grid-cols-4 gap-2">
               {Object.entries(ELEMENTS).map(([id, el]) => (
                 <button key={id} onClick={() => addElement(id)} className="rounded-xl overflow-hidden border border-slate-200 hover:border-amber-600 text-left relative">
@@ -1052,8 +1133,19 @@ export default function App() {
               ))}
             </div>
             <p className="text-xs text-slate-500 mt-2">
-              {premium ? 'Up to 4 pieces on a canvas.' : 'Free adds up to 2 pieces. Premium unlocks all 8.'}
-              {selected && (
+              {premium ? 'Up to 4 pieces on a canvas.' : 'Free adds up to 2 pieces. Premium unlocks all 10.'}
+              {selected && selected.kind === 'text' ? (
+                <span className="block mt-2">
+                  Selected: <b>Ribbon words</b> <span className="font-normal text-slate-500">· drag them anywhere — on the ribbon or anywhere on the design</span>
+                  <label className="block mt-1">Words on the ribbon
+                    <input value={selected.text || ''} onChange={(e) => updateSelectedText(e.target.value)} placeholder="Type their name for the ribbon…" maxLength={48} className="mt-1 w-full border border-slate-300 rounded-lg px-3 py-2 font-normal" />
+                  </label>
+                  <label className="block mt-1">Size
+                    <input type="range" min="0.12" max="0.45" step="0.01" value={selected.w} onChange={(e) => updateSelected(parseFloat(e.target.value))} className="w-full" />
+                  </label>
+                  <button onClick={() => removeElement(selected.uid)} className="text-red-700 font-bold text-xs mt-1">Remove these words</button>
+                </span>
+              ) : selected && (
                 <span className="block mt-2">
                   Selected: <b>{ELEMENTS[selected.id].name}</b>
                   <label className="block mt-1">Size
@@ -1134,7 +1226,7 @@ export default function App() {
               <div className="border-2 border-amber-600 bg-amber-50 rounded-xl p-3">
                 <p className="font-bold">Premium · {PREMIUM_PRICE}</p>
                 <ul className="mt-1 space-y-1 text-slate-600">
-                  <li>✓ All 8 photo elements</li>
+                  <li>✓ All 10 photo elements</li>
                   <li>✓ All 5 fonts &amp; backgrounds</li>
                   <li>✓ Program, invitation, keepsakes</li>
                   <li>✓ T-shirt design file</li>
@@ -1167,7 +1259,7 @@ export default function App() {
 
       <footer className="text-center text-xs text-slate-500 pb-8 px-4">
         MemorialPrint · Add the pieces that made them who they were. · Your photo never leaves your device.
-        <span className="block mt-1">Element photos: real photographs, CC licensed via Openverse (see ATTRIBUTION.md).</span>
+        <span className="block mt-1">Element photos: photographs and photorealistic images — credits in ATTRIBUTION.md.</span>
       </footer>
     </div>
   )
