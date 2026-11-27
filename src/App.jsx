@@ -27,10 +27,10 @@ const BACKGROUNDS = {
   sunset: { name: 'Gentle Sunset', premium: true, dark: false, gradient: ['#FDE9D9', '#F3C39B'] },
 }
 
-// Every element is a photograph, a photorealistic image, or one of Paul's
-// own hand-drawn pieces, stored locally in public/elements/. No cartoons,
-// no clip art — the drawings are Paul's own pencil work, in the same
-// classical style as the photos — see ATTRIBUTION.md.
+// Every element is a photograph, a photorealistic image, one of Paul's
+// own hand-drawn pieces, or an image Paul supplied, stored locally in
+// public/elements/. No cartoons, no clip art — the drawings are Paul's own
+// pencil work, in the same classical style as the photos — see ATTRIBUTION.md.
 //
 // `mask` is how "Remove background" works for that photo. The photo's
 // background is cut away by luminance, in the browser, with no API:
@@ -66,6 +66,11 @@ const ELEMENTS = {
   cherubSketch: { name: 'Hand-Drawn Cherub', src: '/elements/cherub-sketch.jpg', premium: true, mask: { type: 'light', lo: 0.75, hi: 0.92 } },
   prayingCherub: { name: 'Praying Cherub & Roses', src: '/elements/praying-cherub.jpg', premium: true, mask: { type: 'light', lo: 0.72, hi: 0.90 } },
   prayingAngel: { name: 'Praying Angel', src: '/elements/praying-angel.jpg', premium: true, mask: { type: 'light', lo: 0.78, hi: 0.93 } },
+  cherubPlaque: { name: 'Cherub & Heart Plaque', src: '/elements/cherub-plaque.jpg', premium: true, mask: { type: 'light', lo: 0.80, hi: 0.90 } },
+  celticCross: { name: 'Celtic Cross', src: '/elements/celtic-cross.jpg', premium: true, mask: null },
+  angelHeart: { name: 'Praying Angel & Heart', src: '/elements/angel-heart.jpg', premium: true, mask: null },
+  stainedGlass: { name: 'Stained Glass Memory', src: '/elements/stained-glass.jpg', premium: true, mask: null },
+  dovesMemory: { name: 'Doves & Memory Banner', src: '/elements/doves-memory.jpg', premium: true, mask: { type: 'light', lo: 0.85, hi: 0.93 } },
 }
 
 const OUTPUTS = {
@@ -1235,7 +1240,7 @@ export default function App() {
               ))}
             </div>
             <p className="text-xs text-slate-500 mt-2">
-              {premium ? 'Up to 4 pieces on a canvas.' : 'Free adds up to 2 pieces. Premium unlocks all 13.'}
+              {premium ? 'Up to 4 pieces on a canvas.' : 'Free adds up to 2 pieces. Premium unlocks all 18.'}
               {selected && selected.kind === 'text' ? (
                 <span className="block mt-2">
                   Selected: <b>Ribbon words</b> <span className="font-normal text-slate-500">· drag them anywhere — on the ribbon or anywhere on the design</span>
@@ -1337,7 +1342,7 @@ export default function App() {
               <div className="border-2 border-amber-600 bg-amber-50 rounded-xl p-3">
                 <p className="font-bold">Premium · {PREMIUM_PRICE}</p>
                 <ul className="mt-1 space-y-1 text-slate-600">
-                  <li>✓ All 13 elements</li>
+                  <li>✓ All 18 elements</li>
                   <li>✓ All 5 fonts &amp; backgrounds</li>
                   <li>✓ Program, invitation, keepsakes</li>
                   <li>✓ T-shirt design file</li>

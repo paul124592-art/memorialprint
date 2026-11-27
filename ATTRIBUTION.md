@@ -2,10 +2,10 @@
 
 All element images are real photographs, used under their Creative
 Commons licences as found on Openverse (openverse.org), photorealistic
-images generated for this app, or original drawings by Paul, the app's
-maker. All are stored locally in `public/elements/` so the app
-never depends on a hotlink. Shown unmodified, as framed photo tiles
-on the canvas.
+images generated for this app, original drawings by Paul, the app's
+maker, or images supplied by Paul. All are stored locally in
+`public/elements/` so the app never depends on a hotlink. Shown
+unmodified, as framed photo tiles on the canvas.
 
 | File | Subject | Source | Licence |
 | --- | --- | --- | --- |
@@ -22,6 +22,11 @@ on the canvas.
 | cherub-sketch.jpg | Cherub resting its head on folded arms | Original drawing by Paul (the app's maker) | Original — no licence needed |
 | praying-cherub.jpg | Praying cherub with three roses | Original drawing by Paul (the app's maker) | Original — no licence needed |
 | praying-angel.jpg | Praying angel with roses | Original drawing by Paul (the app's maker) | Original — no licence needed |
+| cherub-plaque.jpg | Cherub on a heart plaque with a ribbon banner | Supplied by Paul | Source not recorded |
+| celtic-cross.jpg | Celtic cross headstone in a cemetery | Supplied by Paul | Source not recorded |
+| angel-heart.jpg | Praying angel child by a marble heart in a rose garden | Supplied by Paul | Source not recorded |
+| stained-glass.jpg | Stained-glass "In Loving Memory" with doves and roses | Supplied by Paul | Source not recorded |
+| doves-memory.jpg | Pencil "In Loving Memory" with two doves and a rose heart | Supplied by Paul | Source not recorded |
 
 A short credit line appears in the app footer. If an element is ever
 replaced, update this file with the new source and licence.
