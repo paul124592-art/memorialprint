@@ -71,6 +71,9 @@ const ELEMENTS = {
   angelHeart: { name: 'Praying Angel & Heart', src: '/elements/angel-heart.jpg', premium: true, mask: null },
   stainedGlass: { name: 'Stained Glass Memory', src: '/elements/stained-glass.jpg', premium: true, mask: null },
   dovesMemory: { name: 'Doves & Memory Banner', src: '/elements/doves-memory.jpg', premium: true, mask: { type: 'light', lo: 0.85, hi: 0.93 } },
+  doveFlight: { name: 'Dove in Flight', src: '/elements/dove-flight.jpg', premium: true, mask: null },
+  doveBranch: { name: 'Dove on Branch', src: '/elements/dove-branch.jpg', premium: true, mask: null },
+  doveSoaring: { name: 'Dove Soaring', src: '/elements/dove-soaring.jpg', premium: true, mask: null },
 }
 
 const OUTPUTS = {
@@ -1240,7 +1243,7 @@ export default function App() {
               ))}
             </div>
             <p className="text-xs text-slate-500 mt-2">
-              {premium ? 'Up to 4 pieces on a canvas.' : 'Free adds up to 2 pieces. Premium unlocks all 18.'}
+              {premium ? 'Up to 4 pieces on a canvas.' : 'Free adds up to 2 pieces. Premium unlocks all 21.'}
               {selected && selected.kind === 'text' ? (
                 <span className="block mt-2">
                   Selected: <b>Ribbon words</b> <span className="font-normal text-slate-500">· drag them anywhere — on the ribbon or anywhere on the design</span>
@@ -1342,7 +1345,7 @@ export default function App() {
               <div className="border-2 border-amber-600 bg-amber-50 rounded-xl p-3">
                 <p className="font-bold">Premium · {PREMIUM_PRICE}</p>
                 <ul className="mt-1 space-y-1 text-slate-600">
-                  <li>✓ All 18 elements</li>
+                  <li>✓ All 21 elements</li>
                   <li>✓ All 5 fonts &amp; backgrounds</li>
                   <li>✓ Program, invitation, keepsakes</li>
                   <li>✓ T-shirt design file</li>
