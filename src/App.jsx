@@ -27,9 +27,10 @@ const BACKGROUNDS = {
   sunset: { name: 'Gentle Sunset', premium: true, dark: false, gradient: ['#FDE9D9', '#F3C39B'] },
 }
 
-// Every element is a photograph or photorealistic image, stored locally
-// in public/elements/. No cartoons, no illustrations, no clip art —
-// see ATTRIBUTION.md.
+// Every element is a photograph, a photorealistic image, or one of Paul's
+// own hand-drawn pieces, stored locally in public/elements/. No cartoons,
+// no clip art — the drawings are Paul's own pencil work, in the same
+// classical style as the photos — see ATTRIBUTION.md.
 //
 // `mask` is how "Remove background" works for that photo. The photo's
 // background is cut away by luminance, in the browser, with no API:
@@ -41,7 +42,8 @@ const BACKGROUNDS = {
 //   - { type: 'light', lo, hi } — the background is bright: pixels
 //     brighter than `hi` become transparent, darker than `lo` stay
 //     solid. For the rose heart and ribbon heart (dark-red subject on
-//     white) this takes the white away clean.
+//     white) this takes the white away clean, and for Paul's hand-drawn
+//     pieces (dark pencil on white paper) it takes the paper away.
 //   - null — the background cannot be separated from the subject by
 //     brightness (white roses on cream, a dark cross against blue sky,
 //     or a sunset, which is all scene and no subject), so the toggle is
@@ -61,6 +63,9 @@ const ELEMENTS = {
   heart: { name: 'Rose Heart', src: '/elements/heart.jpg', premium: true, mask: { type: 'light', lo: 0.72, hi: 0.88 } },
   cherub: { name: 'Cherub', src: '/elements/cherub.jpg', premium: true, mask: { type: 'dark', lo: 0.45, hi: 0.68 } },
   ribbonHeart: { name: 'Ribbon Heart', src: '/elements/ribbon-heart.jpg', premium: true, ribbonText: true, mask: { type: 'light', lo: 0.58, hi: 0.80 } },
+  cherubSketch: { name: 'Hand-Drawn Cherub', src: '/elements/cherub-sketch.jpg', premium: true, mask: { type: 'light', lo: 0.75, hi: 0.92 } },
+  prayingCherub: { name: 'Praying Cherub & Roses', src: '/elements/praying-cherub.jpg', premium: true, mask: { type: 'light', lo: 0.72, hi: 0.90 } },
+  prayingAngel: { name: 'Praying Angel', src: '/elements/praying-angel.jpg', premium: true, mask: { type: 'light', lo: 0.78, hi: 0.93 } },
 }
 
 const OUTPUTS = {
@@ -1218,7 +1223,7 @@ export default function App() {
 
           {/* 4 · Elements */}
           <div className="bg-white rounded-2xl shadow p-4">
-            <h2 className="font-display font-semibold text-lg mb-2">4 · Add the pieces <span className="text-sm font-body font-normal text-slate-500">· photographs, tap to add — drag them on the canvas</span></h2>
+            <h2 className="font-display font-semibold text-lg mb-2">4 · Add the pieces <span className="text-sm font-body font-normal text-slate-500">· tap to add — drag them on the canvas</span></h2>
             <div className="grid grid-cols-4 gap-2">
               {Object.entries(ELEMENTS).map(([id, el]) => (
                 <button key={id} onClick={() => addElement(id)} className="rounded-xl overflow-hidden border border-slate-200 hover:border-amber-600 text-left relative">
@@ -1230,7 +1235,7 @@ export default function App() {
               ))}
             </div>
             <p className="text-xs text-slate-500 mt-2">
-              {premium ? 'Up to 4 pieces on a canvas.' : 'Free adds up to 2 pieces. Premium unlocks all 10.'}
+              {premium ? 'Up to 4 pieces on a canvas.' : 'Free adds up to 2 pieces. Premium unlocks all 13.'}
               {selected && selected.kind === 'text' ? (
                 <span className="block mt-2">
                   Selected: <b>Ribbon words</b> <span className="font-normal text-slate-500">· drag them anywhere — on the ribbon or anywhere on the design</span>
@@ -1332,7 +1337,7 @@ export default function App() {
               <div className="border-2 border-amber-600 bg-amber-50 rounded-xl p-3">
                 <p className="font-bold">Premium · {PREMIUM_PRICE}</p>
                 <ul className="mt-1 space-y-1 text-slate-600">
-                  <li>✓ All 10 photo elements</li>
+                  <li>✓ All 13 elements</li>
                   <li>✓ All 5 fonts &amp; backgrounds</li>
                   <li>✓ Program, invitation, keepsakes</li>
                   <li>✓ T-shirt design file</li>
@@ -1365,7 +1370,7 @@ export default function App() {
 
       <footer className="text-center text-xs text-slate-500 pb-8 px-4">
         MemorialPrint · Add the pieces that made them who they were. · Your photo never leaves your device.
-        <span className="block mt-1">Element photos: photographs and photorealistic images — credits in ATTRIBUTION.md.</span>
+        <span className="block mt-1">Element images: photographs, photorealistic images, and original drawings — credits in ATTRIBUTION.md.</span>
       </footer>
     </div>
   )
