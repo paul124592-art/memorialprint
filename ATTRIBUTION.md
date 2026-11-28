@@ -30,6 +30,7 @@ unmodified, as framed photo tiles on the canvas.
 | dove-flight.jpg | Pencil dove in flight (left panel of a three-dove triptych) | Supplied by Paul | Source not recorded |
 | dove-branch.jpg | Pencil dove perched on a branch (middle panel of a three-dove triptych) | Supplied by Paul | Source not recorded |
 | dove-soaring.jpg | Pencil dove soaring (right panel of a three-dove triptych) | Supplied by Paul | Source not recorded |
+| resting-cherub.jpg | Pencil cherub resting its chin on its hands, eyes closed | Supplied by Paul | Source not recorded |
 
 A short credit line appears in the app footer. If an element is ever
 replaced, update this file with the new source and licence.

@@ -74,6 +74,7 @@ const ELEMENTS = {
   doveFlight: { name: 'Dove in Flight', src: '/elements/dove-flight.jpg', premium: true, mask: null },
   doveBranch: { name: 'Dove on Branch', src: '/elements/dove-branch.jpg', premium: true, mask: null },
   doveSoaring: { name: 'Dove Soaring', src: '/elements/dove-soaring.jpg', premium: true, mask: null },
+  restingCherub: { name: 'Resting Cherub', src: '/elements/resting-cherub.jpg', premium: true, mask: { type: 'light', lo: 0.75, hi: 0.92 } },
 }
 
 const OUTPUTS = {
@@ -1243,7 +1244,7 @@ export default function App() {
               ))}
             </div>
             <p className="text-xs text-slate-500 mt-2">
-              {premium ? 'Up to 4 pieces on a canvas.' : 'Free adds up to 2 pieces. Premium unlocks all 21.'}
+              {premium ? 'Up to 4 pieces on a canvas.' : 'Free adds up to 2 pieces. Premium unlocks all 22.'}
               {selected && selected.kind === 'text' ? (
                 <span className="block mt-2">
                   Selected: <b>Ribbon words</b> <span className="font-normal text-slate-500">· drag them anywhere — on the ribbon or anywhere on the design</span>
