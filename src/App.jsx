@@ -75,6 +75,25 @@ const ELEMENTS = {
   doveBranch: { name: 'Dove on Branch', src: '/elements/dove-branch.jpg', premium: true, mask: null },
   doveSoaring: { name: 'Dove Soaring', src: '/elements/dove-soaring.jpg', premium: true, mask: null },
   restingCherub: { name: 'Resting Cherub', src: '/elements/resting-cherub.jpg', premium: true, mask: { type: 'light', lo: 0.75, hi: 0.92 } },
+  handsDoveCherub: { name: 'Hands, Dove & Cherub', src: '/elements/hands-dove-cherub.jpg', premium: true, mask: null },
+  stairwayHeaven: { name: 'Stairway to Heaven', src: '/elements/stairway-heaven.jpg', premium: true, mask: null },
+  doveGentleHands: { name: 'Dove in Gentle Hands', src: '/elements/dove-gentle-hands.jpg', premium: true, mask: null },
+  doveOpenHand: { name: 'Dove Above an Open Hand', src: '/elements/dove-open-hand.jpg', premium: true, mask: null },
+  dovesScrollQuill: { name: 'Doves, Scroll & Quill', src: '/elements/doves-scroll-quill.jpg', premium: true, mask: null },
+  angelClock: { name: 'Angel & Clock', src: '/elements/angel-clock.jpg', premium: true, mask: null },
+  cherubRoseWindow: { name: 'Cherub & Rose Window', src: '/elements/cherub-rose-window.jpg', premium: true, mask: null },
+  restInPeaceScript: { name: 'Rest In Peace Script', src: '/elements/rest-in-peace-script.jpg', premium: true, mask: { type: 'light', lo: 0.75, hi: 0.92 } },
+  prayingAngelCross: { name: 'Praying Angel & Cross', src: '/elements/praying-angel-cross.jpg', premium: true, mask: null },
+  prayingAngelCrosses: { name: 'Praying Angel & Three Crosses', src: '/elements/praying-angel-crosses.jpg', premium: true, mask: null },
+  crownThornsCross: { name: 'Crown of Thorns Cross', src: '/elements/crown-thorns-cross.jpg', premium: true, mask: null },
+  ornateAngelCross: { name: 'Ornate Angel Cross', src: '/elements/ornate-angel-cross.jpg', premium: true, mask: null },
+  threeCrossesHill: { name: 'Three Crosses on the Hill', src: '/elements/three-crosses-hill.jpg', premium: true, mask: null },
+  prayingHandsCross: { name: 'Praying Hands & Cross', src: '/elements/praying-hands-cross.jpg', premium: true, mask: null },
+  greyRoses: { name: 'Grey Roses', src: '/elements/grey-roses.jpg', premium: true, mask: { type: 'light', lo: 0.75, hi: 0.92 } },
+  sleepingCherub: { name: 'Sleeping Cherub', src: '/elements/sleeping-cherub.jpg', premium: true, mask: null },
+  prayingAngelClouds: { name: 'Praying Angel in the Clouds', src: '/elements/praying-angel-clouds.jpg', premium: true, mask: null },
+  crossClouds: { name: 'Cross in the Clouds', src: '/elements/cross-clouds.jpg', premium: true, mask: null },
+  cherubBlankScroll: { name: 'Cherub & Blank Scroll', src: '/elements/cherub-blank-scroll.jpg', premium: true, mask: null },
 }
 
 const OUTPUTS = {
@@ -1244,7 +1263,7 @@ export default function App() {
               ))}
             </div>
             <p className="text-xs text-slate-500 mt-2">
-              {premium ? 'Up to 4 pieces on a canvas.' : 'Free adds up to 2 pieces. Premium unlocks all 22.'}
+              {premium ? 'Up to 4 pieces on a canvas.' : 'Free adds up to 2 pieces. Premium unlocks all 41.'}
               {selected && selected.kind === 'text' ? (
                 <span className="block mt-2">
                   Selected: <b>Ribbon words</b> <span className="font-normal text-slate-500">· drag them anywhere — on the ribbon or anywhere on the design</span>
@@ -1346,7 +1365,7 @@ export default function App() {
               <div className="border-2 border-amber-600 bg-amber-50 rounded-xl p-3">
                 <p className="font-bold">Premium · {PREMIUM_PRICE}</p>
                 <ul className="mt-1 space-y-1 text-slate-600">
-                  <li>✓ All 21 elements</li>
+                  <li>✓ All 41 elements</li>
                   <li>✓ All 5 fonts &amp; backgrounds</li>
                   <li>✓ Program, invitation, keepsakes</li>
                   <li>✓ T-shirt design file</li>
